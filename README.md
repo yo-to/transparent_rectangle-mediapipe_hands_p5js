@@ -1,4 +1,4 @@
-# transparent_rectangle-mediapipe_hands_p5js
+# MediaPipe Hands と透過処理した矩形の描画の組み合わせ
 
 ## 使い方
 使い方は以下の通りです。  
