@@ -18,7 +18,8 @@
     // ●Hands - mediapipe https://google.github.io/mediapipe/solutions/hands.html
     const isFlipped = true;
 
-    let keypointsHand = [];
+    let keypointsHand = [],tip = [],distance = [];
+    const colors = ["rgba(0,100,20,0.5)", "rgba(0,40,100,0.5)"];
 
     const videoElement = document.getElementsByClassName("input_video")[0];
     videoElement.style.display = "none";
@@ -88,29 +89,24 @@
       image(videoImage, 0, 0, displayWidth, displayHeight);
       pop();
 
-      if (keypointsHand.length === 2) {
+      if (keypointsHand.length > 0) {
+        const keypointLength = keypointsHand.length;
         // 親指と人差し指の先は、4 と 8
-        const tip0 = {
-          thumb: keypointsHand[0][4],
-          index: keypointsHand[0][8],
-        };
-        const tip1 = {
-          thumb: keypointsHand[1][4],
-          index: keypointsHand[1][8],
-        };
+        for (i = 0; i < keypointLength; i++) {
+          tip[i] = {
+            thumb: keypointsHand[i][4],
+            index: keypointsHand[i][8],
+          };
 
-        const distance0 = dist(tip0.thumb.x, tip0.thumb.y, tip0.index.x, tip0.index.y)
-        const distance1 = dist(tip1.thumb.x, tip1.thumb.y, tip1.index.x, tip1.index.y)
-        console.log(distance0);
-        console.log(distance1);
+          distance[i] = dist(tip[i].thumb.x, tip[i].thumb.y, tip[i].index.x, tip[i].index.y);
+          // console.log(distance[i]);
 
-        push();
-        noStroke();
-        fill("rgba(0,100,20,0.5)");
-        rect(tip0.index.x*displayWidth, tip0.index.y*displayHeight, distance0*displayWidth, distance0*displayHeight);
-        fill("rgba(0,40,100,0.5)");
-        rect(tip1.index.x*displayWidth, tip1.index.y*displayHeight, distance1*displayWidth, distance1*displayHeight);
-        pop();
+          push();
+          noStroke();
+          fill(colors[i]);
+          rect(tip[i].index.x * displayWidth, tip[i].index.y * displayHeight, distance[i] * displayWidth, distance[i] * displayHeight);
+          pop();
+        }
       }
 
       push();
@@ -118,7 +114,7 @@
       rect(5, 5, 270, 80);
       textSize(14);
       fill(255, 255, 255);
-      text("両手をカメラにうつして画面の中で", 20, 30);
+      text("片手/両手をカメラにうつして画面中で", 20, 30);
       text("動かしたり、親指・人差し指の距離を", 20, 50);
       text("近づけたり/離したりしてみてください", 20, 70);
       pop();
