@@ -8,3 +8,6 @@
 
 ## ↓体験できるもの
 https://yo-to.github.io/transparent_rectangle-mediapipe_hands_p5js/
+
+## 利用している技術
+手の認識には、Googleさんの [MediaPipe Hands](https://google.github.io/mediapipe/solutions/hands.html)を使っていて、矩形の描画処理は [p5.js](https://p5js.org/) を使っています。
