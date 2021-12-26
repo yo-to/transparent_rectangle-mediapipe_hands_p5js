@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+
+  <meta charset="utf-8" />
+</head>
+
+<body>
+  <video class="input_video"></video>
+  <script>
+    // ●Hands - mediapipe https://google.github.io/mediapipe/solutions/hands.html
+    const isFlipped = true;
+
+    let keypointsHand = [];
+
+    const videoElement = document.getElementsByClassName("input_video")[0];
+    videoElement.style.display = "none";
+
+    function onHandsResults(results) {
+      keypointsHand = results.multiHandLandmarks;
+    }
+
+    const hands = new Hands({
+      locateFile: (file) => {
+        return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+      },
+    });
+
+    hands.setOptions({
+      selfieMode: isFlipped,
+      maxNumHands: 2, // 最大2つに制限
+      modelComplexity: 1,
+      minDetectionConfidence: 0.5,
+      minTrackingConfidence: 0.5,
+    });
+    hands.onResults(onHandsResults);
+
+    const camera = new Camera(videoElement, {
+      onFrame: async () => {
+        await hands.send({ image: videoElement });
+      },
+      width: 1280,
+      height: 720,
+    });
+    camera.start();
+
+    let imagePNG;
+    let videoImage;
+    let flag = {
+      thumb: false,
+      index: false,
+      middle: false,
+      ring: false,
+      pinky: false,
+    };
+
+    function setup() {
+      createCanvas(720, 450);
+      videoImage = createGraphics(640, 360);
+    }
+
+    function draw() {
+      clear();
+      background("rgba(100, 100, 255, 0.2)");
+
+      videoImage.drawingContext.drawImage(
+        videoElement,
+        0,
+        0,
+        videoImage.width,
+        videoImage.height
+      );
+
+      push();
+      if (isFlipped) {
+        translate(width, 0);
+        scale(-1, 1);
+      }
+      displayWidth = width;
+      displayHeight = (width * videoImage.height) / videoImage.width;
+      image(videoImage, 0, 0, displayWidth, displayHeight);
+      pop();
+
+      if (keypointsHand.length === 2) {
+        // 親指と人差し指の先は、4 と 8
+        const tip0 = {
+          thumb: keypointsHand[0][4],
+          index: keypointsHand[0][8],
+        };
+        const tip1 = {
+          thumb: keypointsHand[1][4],
+          index: keypointsHand[1][8],
+        };
+
+        const distance0 = dist(tip0.thumb.x, tip0.thumb.y, tip0.index.x, tip0.index.y)
+        const distance1 = dist(tip1.thumb.x, tip1.thumb.y, tip1.index.x, tip1.index.y)
+        console.log(distance0);
+        console.log(distance1);
+
+        push();
+        noStroke();
+        fill("rgba(0,100,20,0.5)");
+        rect(tip0.index.x*displayWidth, tip0.index.y*displayHeight, distance0*displayWidth, distance0*displayHeight);
+        fill("rgba(0,40,100,0.5)");
+        rect(tip1.index.x*displayWidth, tip1.index.y*displayHeight, distance1*displayWidth, distance1*displayHeight);
+        pop();
+      }
+
+      push();
+      fill(0, 0, 0);
+      rect(5, 5, 270, 80);
+      textSize(14);
+      fill(255, 255, 255);
+      text("両手をカメラにうつして画面の中で", 20, 30);
+      text("動かしたり、親指・人差し指の距離を", 20, 50);
+      text("近づけたり/離したりしてみてください", 20, 70);
+      pop();
+    }
+  </script>
+</body>
+
+</html>
